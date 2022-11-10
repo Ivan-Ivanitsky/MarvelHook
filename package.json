@@ -2,6 +2,9 @@
   "name": "marvel",
   "version": "0.1.0",
   "lockfileVersion": 1,
+  "engines": {
+    "node": "16.18.1"
+  },
   "requires": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
