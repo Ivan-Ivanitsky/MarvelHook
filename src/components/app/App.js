@@ -16,6 +16,10 @@ class App extends Component {
     this.setState({ id: id });
   };
 
+  onClearCharId = () => {
+    this.setState({ id: null });
+  };
+
   render() {
     return (
       <div className="app">
@@ -29,7 +33,7 @@ class App extends Component {
               <CharList onCharSelected={this.onCharSelected} />
             </ErrorBoundery>
             <ErrorBoundery>
-              <CharInfo id={this.state.id} />
+              <CharInfo id={this.state.id} onClearCharId={this.onClearCharId} />
             </ErrorBoundery>
           </div>
           <img className="bg-decoration" src={decoration} alt="vision" />

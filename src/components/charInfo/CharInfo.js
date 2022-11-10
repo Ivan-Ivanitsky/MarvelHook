@@ -1,5 +1,4 @@
 import "./charInfo.scss";
-import thor from "../../resources/img/thor.jpeg";
 import MarvelService from "../../service/marvelService";
 import Error from "../error/error";
 import Spinner from "../spinner/spinner";
@@ -11,6 +10,7 @@ class CharInfo extends Component {
     charSelected: null,
     error: false,
     loading: false,
+    activeModal: false,
   };
 
   marvelService = new MarvelService();
@@ -25,6 +25,10 @@ class CharInfo extends Component {
     }
   }
 
+  activeModal = () => {
+    this.setState({ activeModal: true });
+  };
+
   upLoaded = () => {
     const { id } = this.props;
     if (!id) {
@@ -32,6 +36,7 @@ class CharInfo extends Component {
     }
 
     this.onCharLoading();
+    this.activeModal();
     this.marvelService
       .getCharacter(process.env.REACT_APP_API_URL, id)
       .then(this.onCharLoaded)
@@ -41,25 +46,44 @@ class CharInfo extends Component {
   };
 
   onCharLoaded = (char) => {
-    this.setState({ charSelected: char, loading: false, error: false });
+    this.setState({
+      charSelected: char,
+      loading: false,
+      error: false,
+    });
   };
 
   onCharLoading = () => {
     this.setState({ loading: true });
   };
 
+  closeModal = (e) => {
+    console.log(e);
+    this.setState({ activeModal: false });
+    this.props.onClearCharId();
+  };
+
   render() {
-    const { loading, charSelected, error } = this.state;
+    let modalActive = "char__background";
+    const { loading, charSelected, error, activeModal } = this.state;
     const sceleton = !(loading || error || charSelected) ? <Skeleton /> : null;
     const errorMessages = error ? <Error /> : null;
     const spinner = loading ? <Spinner /> : null;
     const view = !loading && charSelected ? <View char={charSelected} /> : null;
+    if (activeModal) {
+      modalActive += " char__background_active";
+    }
     return (
-      <div className="char__info">
-        {sceleton}
-        {errorMessages}
-        {spinner}
-        {view}
+      <div className={modalActive}>
+        <div className="char__info">
+          <span className="close__modal" onClick={this.closeModal}>
+            &#10006;
+          </span>
+          {sceleton}
+          {errorMessages}
+          {spinner}
+          {view}
+        </div>
       </div>
     );
   }

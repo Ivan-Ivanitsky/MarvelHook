@@ -62,15 +62,21 @@ class CharList extends Component {
 
   selectedItemCharActive = (id) => {
     const { characters } = this.state;
+    this.clearSelectedCharActive();
     this.setState({
       characters: characters.map((item) => {
-        if (item.id === id) {
-          item.active = !item.active;
-          return item;
-        } else {
-          item.active = false;
-          return item;
-        }
+        if (item.id === id) item.active = true;
+        return item;
+      }),
+    });
+  };
+
+  clearSelectedCharActive = () => {
+    const { characters } = this.state;
+    this.setState({
+      characters: characters.map((item) => {
+        if (item.active) item.active = false;
+        return item;
       }),
     });
   };
