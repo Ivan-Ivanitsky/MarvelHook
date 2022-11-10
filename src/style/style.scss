@@ -83,10 +83,13 @@ main {
 
 @media(max-width:767px){
     .app {
+        width: 700px;
+    }
+    .app__wrapper{
         width: 600px;
+        position: relative;
         margin: 0 auto;
         padding: 50px 0 50px 0;
-        position: relative;
     }
     .randomchar{
         grid-template-columns: repeat(1,100%);
