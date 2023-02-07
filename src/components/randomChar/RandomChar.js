@@ -1,77 +1,60 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import "./randomChar.scss";
 import mjolnir from "../../resources/img/mjolnir.png";
-import MarvelService from "../../service/marvelService";
+import useMarvelService from "../../service/marvelService";
 import Spinner from "../spinner/spinner";
 import Error from "../error/error";
 
-class RandomChar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      char: {},
-      loading: true,
-      errorMessages: false,
-    };
+const RandomChar = (props) => {
+  const { getCharacter, clearError, loading, error } = useMarvelService();
+
+  const [char, setChar] = useState(null);
+
+  useEffect(() => {
+    getIdCharacter();
+  }, []);
+
+  function onUpdateCharacter(char) {
+    setChar(char);
   }
 
-  marvelService = new MarvelService();
-
-  componentDidMount() {
-    this.getIdCharacter();
-  }
-
-  onUpdateCharacter = (char) => {
-    this.setState({ char, loading: false });
-  };
-
-  getIdCharacter = () => {
+  function getIdCharacter() {
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-    this.marvelService
-      .getCharacter(process.env.REACT_APP_API_URL, id)
-      .then(
-        this.onUpdateCharacter,
-        this.setState({ loading: true, errorMessages: false })
-      )
-      .catch(() => {
-        this.setState({ loading: false, errorMessages: true });
-      });
-  };
-
-  render() {
-    const { char, loading, errorMessages } = this.state;
-    const spinner = loading ? <Spinner /> : null;
-    const error = errorMessages ? <Error /> : null;
-    const viewContent = !(loading || errorMessages) ? (
-      <ViewChar char={char} />
-    ) : null;
-
-    return (
-      <div className="randomchar">
-        {spinner}
-        {viewContent}
-        {error}
-        <div className="randomchar__static">
-          <p className="randomchar__title">
-            Random character for today!
-            <br />
-            Do you want to get to know him better?
-          </p>
-          <p className="randomchar__title">Or choose another one</p>
-          <button
-            className="button button__main "
-            onClick={() => {
-              this.getIdCharacter();
-            }}
-          >
-            <div className="inner">try it</div>
-          </button>
-          <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
-        </div>
-      </div>
-    );
+    clearError();
+    getCharacter(process.env.REACT_APP_API_URL, id).then(onUpdateCharacter);
   }
-}
+
+  const spinner = loading ? <Spinner /> : null;
+  const errors = error ? <Error /> : null;
+  const viewContent = !(loading || error || !char) ? (
+    <ViewChar char={char} />
+  ) : null;
+
+  return (
+    <div className="randomchar">
+      {spinner}
+      {viewContent}
+      {errors}
+      <div className="randomchar__static">
+        <p className="randomchar__title">
+          Random character for today!
+          <br />
+          Do you want to get to know him better?
+        </p>
+        <p className="randomchar__title">Or choose another one</p>
+        <button
+          className="button button__main "
+          onClick={() => {
+            getIdCharacter();
+          }}
+        >
+          <div className="inner">try it</div>
+        </button>
+        <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
+      </div>
+    </div>
+  );
+};
 
 const ViewChar = ({ char }) => {
   const { name, description, thumbnail, homePage, wiki } = char;

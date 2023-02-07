@@ -34,3 +34,18 @@
         }
     }
 }
+
+
+@media(max-width:768px){
+    .comics{
+        &__grid {
+            grid-template-columns: repeat(auto-fill, 270px);
+        }
+        &__item {
+            &-img {
+                width: 270px;
+                height: 100%;
+            }
+        }
+    }
+}

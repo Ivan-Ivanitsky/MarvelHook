@@ -1,93 +1,73 @@
 import "./charInfo.scss";
-import MarvelService from "../../service/marvelService";
+import useMarvelService from "../../service/marvelService";
 import Error from "../error/error";
 import Spinner from "../spinner/spinner";
 import Skeleton from "../skeleton/Skeleton";
-import { Component } from "react";
+import { useState, useEffect } from "react";
 
-class CharInfo extends Component {
-  state = {
+const CharInfo = (props) => {
+  const { getCharacter, loading, error, clearError } = useMarvelService();
+
+  const [state, setState] = useState({
     charSelected: null,
-    error: false,
-    loading: false,
-    activeModal: false,
-  };
+    onModal: false,
+  });
 
-  marvelService = new MarvelService();
+  useEffect(() => {
+    clearError();
+    upLoaded();
+  }, [props.id]);
 
-  componentDidMount() {
-    this.upLoaded();
+  function activeModal() {
+    setState((state) => ({ ...state, onModal: true }));
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.id !== prevProps.id) {
-      this.upLoaded();
-    }
-  }
-
-  activeModal = () => {
-    this.setState({ activeModal: true });
-  };
-
-  upLoaded = () => {
-    const { id } = this.props;
+  function upLoaded() {
+    const { id } = props;
     if (!id) {
       return;
     }
 
-    this.onCharLoading();
-    this.activeModal();
-    this.marvelService
-      .getCharacter(process.env.REACT_APP_API_URL, id)
-      .then(this.onCharLoaded)
-      .catch(() => {
-        this.setState({ error: true });
-      });
-  };
-
-  onCharLoaded = (char) => {
-    this.setState({
-      charSelected: char,
-      loading: false,
-      error: false,
-    });
-  };
-
-  onCharLoading = () => {
-    this.setState({ loading: true });
-  };
-
-  closeModal = (e) => {
-    console.log(e);
-    this.setState({ activeModal: false });
-    this.props.onClearCharId();
-  };
-
-  render() {
-    let modalActive = "char__background";
-    const { loading, charSelected, error, activeModal } = this.state;
-    const sceleton = !(loading || error || charSelected) ? <Skeleton /> : null;
-    const errorMessages = error ? <Error /> : null;
-    const spinner = loading ? <Spinner /> : null;
-    const view = !loading && charSelected ? <View char={charSelected} /> : null;
-    if (activeModal) {
-      modalActive += " char__background_active";
-    }
-    return (
-      <div className={modalActive}>
-        <div className="char__info">
-          <span className="close__modal" onClick={this.closeModal}>
-            &#10006;
-          </span>
-          {sceleton}
-          {errorMessages}
-          {spinner}
-          {view}
-        </div>
-      </div>
-    );
+    activeModal();
+    getCharacter(process.env.REACT_APP_API_URL, id).then(onCharLoaded);
   }
-}
+
+  function onCharLoaded(char) {
+    setState((state) => ({
+      ...state,
+      charSelected: char,
+    }));
+  }
+
+  function closeModal(e) {
+    console.log(e);
+    setState((state) => ({ ...state, onModal: false }));
+    props.onClearCharId();
+  }
+
+  let modalActive = "char__background";
+  const { charSelected, onModal } = state;
+  const sceleton = !(loading || error || charSelected) ? <Skeleton /> : null;
+  const errorMessages = error ? <Error /> : null;
+  const spinner = loading ? <Spinner /> : null;
+  const view = !loading && charSelected ? <View char={charSelected} /> : null;
+  if (onModal) {
+    modalActive += " char__background_active";
+  }
+  return (
+    <div className={modalActive}>
+      <div className="char__info">
+        <span className="close__modal" onClick={() => closeModal()}>
+          &#10006;
+        </span>
+        {sceleton}
+        {errorMessages}
+        {spinner}
+        {view}
+      </div>
+    </div>
+  );
+};
 
 const View = ({ char }) => {
   const { name, description, thumbnail, homePage, wiki, comics } = char;
@@ -115,7 +95,7 @@ const View = ({ char }) => {
         </div>
       </div>
       <div className="char__descr">{description}</div>
-      <div className="char__comics">Comics:</div>
+      <div className="char__comics"></div>
       <ul className="char__comics-list">
         {!comics.length ? "there are no comics on this hero" : null}
         {comics.map((item, i) => {

@@ -1,120 +1,111 @@
 import "./charList.scss";
-import { Component } from "react";
-import MarvelService from "../../service/marvelService";
+import { useState, useEffect } from "react";
+import useMarvelService from "../../service/marvelService";
 import Spinner from "../spinner/spinner";
+import decoration from "../../resources/img/vision.png";
 import Error from "../error/error";
 
-class CharList extends Component {
-  state = {
+const CharList = (props) => {
+  const { loading, error, clearError, getAllcharacters } = useMarvelService();
+  const [state, setState] = useState({
     characters: [],
-    error: false,
-    loading: true,
     active: false,
     charOffset: 280,
-    loadingOffset: false,
     charLength: null,
-  };
+    setNewItemLoading: true,
+  });
 
-  marvelService = new MarvelService();
+  useEffect(() => {
+    clearError();
+    onLoadingChar();
+    getItem(state.charOffset);
+  }, []);
 
-  getItem = (offset, characters) => {
+  function getItem(offset, characters) {
     const oldData = characters ? characters : "";
-    this.onLoadedChar();
-    this.marvelService
-      .getAllcharacters(process.env.REACT_APP_API_URL, offset)
-      .then((res) => {
-        const data = res.data.results;
-        this.setState({
-          characters: [...oldData, ...data],
-          loading: false,
-          error: false,
-          loadingOffset: false,
-          charLength: data.length,
-        });
-        this.buttonDisabled(this.state.charLength);
-      })
-      .catch((err) => {
-        this.setState({ error: true, loading: false });
-      });
-  };
-
-  componentDidMount() {
-    this.onLoadingChar();
-    this.getItem(this.state.charOffset);
+    onLoadedChar();
+    getAllcharacters(process.env.REACT_APP_API_URL, offset).then((res) => {
+      const data = res.data.results;
+      setState((state) => ({
+        ...state,
+        characters: [...oldData, ...data],
+        loadingOffset: false,
+        setNewItemLoading: false,
+        charLength: data.length,
+      }));
+    });
   }
 
-  buttonDisabled = (charLength) => {
-    if (charLength < 9) {
-      this.setState({ loadingOffset: true });
-    }
-  };
+  function onLoadingChar() {
+    setState((state) => ({ ...state, loadingOffset: true }));
+  }
 
-  onLoadingChar = () => {
-    this.setState({ loadingOffset: true });
-  };
+  function onLoadedChar() {
+    onLoadingChar();
+    setState((state) => ({ ...state, charOffset: charOffset + 9 }));
+  }
 
-  onLoadedChar = () => {
-    this.onLoadingChar();
-    this.setState(({ charOffset }) => ({
-      charOffset: charOffset + 9,
-    }));
-  };
-
-  selectedItemCharActive = (id) => {
-    const { characters } = this.state;
-    this.clearSelectedCharActive();
-    this.setState({
+  function selectedItemCharActive(id) {
+    const { characters } = state;
+    clearSelectedCharActive();
+    setState({
+      ...state,
       characters: characters.map((item) => {
         if (item.id === id) item.active = true;
         return item;
       }),
     });
-  };
+  }
 
-  clearSelectedCharActive = () => {
-    const { characters } = this.state;
-    this.setState({
+  function clearSelectedCharActive() {
+    const { characters } = state;
+    setState({
+      ...state,
       characters: characters.map((item) => {
         if (item.active) item.active = false;
         return item;
       }),
     });
-  };
-
-  render() {
-    const { characters, loading, error, charOffset, loadingOffset } =
-      this.state;
-    let styleBtn = "button button__main button__long";
-    if (loadingOffset) {
-      styleBtn += " button__disabled";
-    }
-    const spinner = loading ? <Spinner /> : null;
-    const errorChar = error ? <Error /> : null;
-    const thumbnail = (
-      <Thumbnail
-        characters={characters}
-        prop={this.props}
-        onActivChar={this.selectedItemCharActive}
-      />
-    );
-
-    return (
-      <div className="char__list">
-        {errorChar}
-        <ul className="char__grid">
-          {spinner}
-          {thumbnail}
-        </ul>
-        <button
-          className={styleBtn}
-          onClick={() => this.getItem(charOffset, characters)}
-        >
-          <div className="inner">load more</div>
-        </button>
-      </div>
-    );
   }
-}
+
+  const {
+    characters,
+    charOffset,
+    loadingOffset,
+    setNewItemLoading,
+    charLength,
+  } = state;
+  let styleBtn = "button button__main button__long";
+  if (loadingOffset) {
+    styleBtn += " button__disabled";
+  }
+  const spinner = setNewItemLoading ? <Spinner /> : null;
+  const errorChar = error ? <Error /> : null;
+  const thumbnail = (
+    <Thumbnail
+      characters={characters}
+      prop={props}
+      onActivChar={selectedItemCharActive}
+    />
+  );
+
+  return (
+    <div className="char__list">
+      {errorChar}
+      <ul className="char__grid">
+        {spinner}
+        {thumbnail}
+      </ul>
+      <button
+        className={styleBtn}
+        onClick={() => getItem(charOffset, characters)}
+      >
+        <div className="inner">load more</div>
+      </button>
+      <img className="bg-decoration" src={decoration} alt="vision" />
+    </div>
+  );
+};
 
 const Thumbnail = (props) => {
   const { characters, prop, onActivChar } = props;
