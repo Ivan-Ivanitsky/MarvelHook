@@ -1,5 +1,5 @@
 {
-  "homepage": "http://ivan-Ivanitsky.github.io/marvelHook",
+  "homepage": "https://ivan-ivanitsky.github.io/marvelHook",
   "name": "marvel",
   "version": "0.1.0",
   "lockfileVersion": 1,
@@ -11,6 +11,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "http-server": "^14.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.3.4",
@@ -18,11 +19,12 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "predeploy": "npm run build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -b master -d build"
   },
   "eslintConfig": {
     "extends": [
